@@ -15,7 +15,14 @@
                     </p>
                 </div>
                 <div class="col-span-6 hero-container">
-                    <img id="hero" src="{{ .Site.Params.hero | absURL }}"/>
+                    <div class="overflow-hidden shadow-xl rounded-2xl">
+                        {{ $heroimage := resources.Get .Site.Params.Hero }}
+                        {{ with $heroimage }}
+                        {{ with .Resize (printf "%dx%d webp q90" .Width .Height) }}
+                        <img imgh src="{{ .RelPermalink }}" width="{{ .Width }}" height="{{ .Height }}" class="w-full h-auto" alt="P1" loading="lazy" />
+                        {{ end }}
+                        {{ end }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,13 +124,13 @@
         <div class="lg:grid lg:grid-cols-2 lg:items-center lg:gap-24">
             <div class="mt-12 grid grid-cols-2 gap-0.5 md:grid-cols-3 lg:mt-0 lg:grid-cols-2">
                 {{ range .Site.Params.P3.Logos }}
-                <div class="flex justify-center col-span-1 px-8 py-8 bg-gray-50 dark:bg-gray-900/10">
+                <div class="flex justify-center col-span-1 px-8 py-6 bg-gray-50 dark:bg-gray-900/10">
                     {{ if .image }}
-                    {{ $sponsor := resources.Get .image }}
-                    <img src="{{ $sponsor.RelPermalink }}" class="max-h-12 dark:invert" alt="{{ .alt }}" loading="lazy" />
+                    {{ $customer := resources.Get .image }}
+                    <img src="{{ $customer.RelPermalink }}" class="max-h-12 dark:invert" alt="{{ .alt }}" loading="lazy" />
                     {{ else }}
-                    {{ $sponsor := resources.Get "images/global/sample-logo.svg" }}
-                    <img src="{{ $sponsor.RelPermalink }}" class="max-h-12 dark:invert" alt="{{ .alt }}" loading="lazy" />
+                    {{ $customer := resources.Get "images/global/sample-logo.svg" }}
+                    <img src="{{ $customer.RelPermalink }}" class="max-h-12 dark:invert" alt="{{ .alt }}" loading="lazy" />
                     {{ end }}
                 </div>
                 {{ end }}
