@@ -15,6 +15,7 @@ features = ["blog", "categories", "webp", "tailwind3", "alpinejs"]
 min_version = "0.104.0"
 
 # If the theme has a single author
+# NOTE: Modified by Uli Köhler <github@techoverflow.net>
 [author]
     name = "Jeremy Nusser"
     homepage = "https://nusserstudios.com"
