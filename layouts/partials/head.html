@@ -29,5 +29,5 @@
 <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}" />
 {{ end }}
 {{ range .Site.Params.custom_css -}}
-<link rel="stylesheet" href="{{ (resources.Get "css/techoverflow.css" | postCSS).RelPermalink }}">
+<link rel="stylesheet" href="{{ (resources.Get . | postCSS).RelPermalink }}">
 {{- end }}
