@@ -3,7 +3,7 @@
         <div class="grid gap-4 mx-auto mt-12 mb-4 lg:max-w-none md:grid-cols-3">
             {{ range .Paginator.Pages }}
             <div class="flex flex-col overflow-hidden rounded-lg shadow-lg bg-gray-50 dark:bg-gray-900">
-                <a href="{{.Permalink}}">
+                <a href="{{.RelPermalink}}">
                     {{ with .Params.featured_image }}
                     {{ with resources.Get . }}
                     {{ $postimage := (.Resize "500x webp q90").RelPermalink }}
@@ -15,7 +15,7 @@
                 </a>
                 <div class="p-6">
                     <div class="flex-1">
-                        <a href="{{.Permalink}}"
+                        <a href="{{.RelPermalink}}"
                            class="block mt-2 text-2xl font-black text-gray-900 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-500 hover:underline">
                             {{.Title}}
                         </a>
@@ -28,7 +28,7 @@
                         <span>
                         {{ range $elem_index, $elem_val := (.GetTerms "categories") }}
                         {{- if gt $elem_index 0 }}, {{ end -}}
-                        <a href="{{ .Permalink }}"
+                        <a href="{{ .RelPermalink }}"
                            class="inline-flex items-center rounded-md bg-gray-300 hover:bg-primary-200 hover:text-black px-2.5 py-0.5 text-sm font-medium text-gray-900 capitalize">{{ .LinkTitle }}</a>
                         {{- end -}}
                         </span>
