@@ -177,7 +177,7 @@
                     <div class="grid gap-4 mx-auto mt-12 mb-4 lg:max-w-none md:grid-cols-3">
                         {{ range (.Paginator 12).Pages }}
                         <div class="flex flex-col overflow-hidden rounded-lg shadow-lg bg-gray-50 dark:bg-gray-900">
-                            <a href="{{.Permalink}}">
+                            <a href="{{.RelPermalink}}">
                                 {{ with .Params.featured_image }}
                                 {{ with resources.Get . }}
                                 {{ $postimage := (.Resize "500x webp q90").RelPermalink }}
