@@ -66,3 +66,7 @@
 {{ $built := resources.Get $customJS }}
 <script type="text/javascript" src="{{ $built.RelPermalink }}" defer></script>
 {{ end }}
+<!-- Include KaTeX if enabled in post-->
+{{ if .Params.katex }}
+    {{ partial "katex.html" . }}
+{{ end }}

@@ -1,0 +1,5 @@
+<!-- Include library -->
+<link rel="stylesheet" href="{{ (resources.Get "css/katex.min.css").RelPermalink }}" />
+<script defer src="{{ (resources.Get "js/katex.min.js").RelPermalink }}"></script>
+<!-- Include auto-render extension & render all KaTeX formula !-->
+<script defer src="{{ (resources.Get "js/auto-render.min.js").RelPermalink }}" onload="renderMathInElement(document.body);"></script>
