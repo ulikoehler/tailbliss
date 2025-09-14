@@ -30,6 +30,18 @@
   <div class="max-w-4xl px-6 pt-6 pb-16 mx-auto prose dark:prose-invert dark:text-white">
     {{.Content}}
     <hr class="after-content" />
+    <div class="max-w-4xl mx-auto mt-2">
+      <div class="flex pb-2 font-medium text-primary-600 dark:text-primary-100 text-md">
+        <span class="pr-2 font-black">Check out similar posts by category:</span>
+        <span>
+          {{ range $elem_index, $elem_val := (.GetTerms "categories") }}
+          {{- if gt $elem_index 0 }}, {{ end -}}
+          <a href="{{ .RelPermalink }}"
+            class="inline-flex items-center rounded-md bg-gray-300 hover:bg-primary-200 hover:text-black px-2.5 py-0.5 text-sm font-medium text-gray-900">{{ .LinkTitle }}</a>
+          {{- end -}}
+        </span>
+      </div>
+    </div>
     <div class="donate">
       <div class="donate-text">
         If this post helped you, please consider buying me a coffee or donating via PayPal to support research & publishing of new posts on TechOverflow
