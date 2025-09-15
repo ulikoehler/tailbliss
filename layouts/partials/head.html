@@ -139,6 +139,6 @@
     {{- if ne $image "" -}}{{- $data = merge $data (dict "image" (absURL $image)) -}}{{- end -}}
     {{- if $git -}}{{- $data = merge $data (dict "identifier" $git.AbbreviatedHash "version" $git.AbbreviatedHash) -}}{{- end -}}
     <script type="application/ld+json">
-    {{- $data | jsonify -}}
+    {{- $data | jsonify | safeJS -}}
     </script>
 {{- end -}}
