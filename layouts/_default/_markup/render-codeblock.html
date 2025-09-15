@@ -1,0 +1,82 @@
+{{/* layouts/_default/_markup/render-codeblock.html
+Use Hugo's transform.HighlightCodeBlock to render fenced code blocks.
+This avoids accessing fields like .Info or .Language directly which may
+not be present on all Hugo versions' codeBlockContext. */}}
+
+{{- $result := transform.HighlightCodeBlock . -}}
+{{- $id := printf "cb-%s-%d" (.Page.File.BaseFileName | default "page") .Ordinal -}}
+
+{{- $lang := "text" -}}
+{{- with .Type }}{{- $lang = . | lower -}}{{ end -}}
+
+{{/* Map common hugo/highlight languages to filename extensions */}}
+{{- $extmap := dict
+"bash" "sh" "sh" "sh" "zsh" "sh" "shell" "sh" "console" "sh"
+"python" "py" "py" "py" "py3" "py" "python3" "py"
+"go" "go" "golang" "go"
+"rust" "rs" "rs" "rs"
+"c" "c" "h" "h" "c++" "cpp" "cpp" "cpp" "cxx" "cpp" "hpp" "hpp"
+"java" "java"
+"javascript" "js" "js" "js" "jsx" "jsx" "typescript" "ts" "ts" "ts" "tsx" "tsx"
+"json" "json" "yaml" "yml" "yml" "yml" "xml" "xml" "html" "html" "css" "css"
+"kotlin" "kt" "swift" "swift" "sql" "sql" "makefile" "Makefile" "dockerfile" "Dockerfile"
+"ruby" "rb" "perl" "pl" "php" "php" "lua" "lua" "toml" "toml" "ini" "ini"
+"markdown" "md" "md" "md" "text" "txt"
+}}
+
+{{- /* Determine extension or special filename tokens (Makefile, Dockerfile) */ -}}
+{{- $ext := index $extmap $lang | default "txt" -}}
+{{- $guessed := "" -}}
+{{- if or (eq $ext "Makefile") (eq $ext "Dockerfile") -}}
+{{- $guessed = $ext -}}
+{{- else -}}
+{{- $guessed = printf "example.%s" $ext -}}
+{{- end -}}
+
+{{- /* Allow attribute override: ```lang {filename="custom.name"}``` */ -}}
+{{- $filename := .Attributes.filename | default $guessed -}}
+
+<div class="codeblock group rounded-lg overflow-hidden shadow-sm border" id="{{ $id }}" data-lang="{{ $lang }}"
+    data-filename="{{ $filename }}">
+    <div
+        class="codeblock-top flex items-center justify-between gap-1 px-3 py-1 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+        <div class="codeblock-left flex items-center gap-2">
+            <span class="codeblock-filename ml-3 text-slate-700 dark:text-slate-100 text-xs font-semibold tracking-wide">{{
+                $filename }}</span>
+        </div>
+        <div class="codeblock-actions flex items-center gap-1 pr-3">
+            <button
+                class="codeblock-btn inline-flex items-center gap-2 px-2 py-1 text-sm rounded-md bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm hover:shadow-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                data-action="copy" data-for="{{ $id }}" aria-label="Copy code" title="Copy code">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-current" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span class="ml-1">Copy</span>
+            </button>
+            <button
+                class="codeblock-btn inline-flex items-center gap-2 px-2 py-1 text-sm rounded-md bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm hover:shadow-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                data-action="download" data-for="{{ $id }}" data-filename="{{ $filename }}"
+                aria-label="Download code ({{ $filename }})" title="Download code ({{ $filename }})">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-current" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span class="ml-1">Download</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="codeblock-body">
+        {{- /* The transform result already includes highlighted HTML */ -}}
+        {{- $result.Wrapped | safeHTML -}}
+    </div>
+
+    {{/* Keep a raw copy for JS to read safely (no HTML entities) */}}
+    <textarea class="codeblock-raw" id="{{ $id }}-raw" hidden>{{- .Inner -}}</textarea>
+</div>
