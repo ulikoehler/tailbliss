@@ -31,3 +31,82 @@
 {{ range .Site.Params.custom_css -}}
 <link rel="stylesheet" href="{{ (resources.Get . | postCSS).RelPermalink }}">
 {{- end }}
+{{/*
+    Structured data (JSON-LD Article)
+
+    Inclusion:
+    - Only injected for single content pages where the page `.Section` equals "posts".
+
+    Author selection priority:
+    1. Post frontmatter `author` (i.e. `.Params.author`) — preferred and post-specific.
+    2. Git author (`.GitInfo.AuthorName`) — fallback when frontmatter is missing and site is tracked with git.
+    3. Site param `author` (i.e. `.Param "author"`) — last-resort global fallback.
+
+    Dates:
+    - `datePublished` is truncated to midnight (00:00:00) but preserves the original timezone offset.
+    - `dateModified` uses either the Git modification date if available or `.Lastmod`.
+
+    Images:
+    - Prefer `.Params.images[0]` or `.Params.image` if present, then fallback to site params if needed.
+
+    Git data:
+    - When `.GitInfo` is available we include the abbreviated commit hash as `identifier`/`version`.
+*/}}
+{{ if and .IsPage (eq .Section "posts") }}
+        {{ $git := .GitInfo }}
+        {{/* Prefer frontmatter `.Params.author`, then Git author, then site param `author` */}}
+    {{ $authorName := "" }}
+    {{ with .Params.author }}{{ $authorName = . }}{{ end }}
+    {{ if and (eq $authorName "") $git }}{{ if ne $git.AuthorName "" }}{{ $authorName = $git.AuthorName }}{{ end }}{{ end }}
+    {{ if eq $authorName "" }}{{ $authorName = (.Param "author") }}{{ end }}
+        {{/*
+            Determine dateModified source:
+            - Use the git author date when `.GitInfo` provides it (most accurate for last edit)
+            - Otherwise fall back to Hugo's `.Lastmod`
+        */}}
+        {{ $dateModifiedSource := cond (and $git (ne $git.AuthorDate nil)) $git.AuthorDate .Lastmod }}
+
+        {{/*
+            datePublished: truncate time to midnight (00:00:00) but keep original timezone offset.
+            This ensures published dates are normalized while still expressing the site's TZ.
+        */}}
+        {{ $publishDate := .Date }}
+        {{ $tz := $publishDate.Format "Z07:00" }}
+        {{ $datePublished := printf "%sT00:00:00%s" ($publishDate.Format "2006-01-02") $tz }}
+
+            {{/*
+                dateModified: use the date portion of the last-modified source and
+                truncate the time to midnight while preserving timezone offset.
+                This mirrors `datePublished` but reflects the last edit day.
+            */}}
+            {{ $modifiedTime := time $dateModifiedSource }}
+            {{ $modifiedTz := $modifiedTime.Format "Z07:00" }}
+            {{ $dateModified := printf "%sT00:00:00%s" ($modifiedTime.Format "2006-01-02") $modifiedTz }}
+        {{/*
+            Image selection priority:
+            1. `.Params.images[0]` (array of images in frontmatter)
+            2. `.Params.image` (single image in frontmatter)
+            3. Site param `featureImage` as a final fallback
+        */}}
+        {{ $image := "" }}
+        {{ with .Params.images }}{{ if gt (len .) 0 }}{{ $image = index . 0 }}{{ end }}{{ end }}
+        {{ with .Params.image }}{{ $image = . }}{{ end }}
+        {{ if and (eq $image "") (.Param "featureImage") }}{{ $image = (.Param "featureImage") }}{{ end }}
+    {{ $data := dict
+            "@context" "https://schema.org"
+            "@type" "Article"
+            "headline" .Title
+            "description" (or .Description .Summary)
+            "datePublished" $datePublished
+            "dateModified" $dateModified
+            "author" (dict "@type" "Person" "name" $authorName)
+            "mainEntityOfPage" (dict "@type" "WebPage" "@id" .Permalink)
+            "url" .Permalink
+            "wordCount" .WordCount
+    }}
+    {{ if ne $image "" }}{{ $data = merge $data (dict "image" (absURL $image)) }}{{ end }}
+    {{ if $git }}{{ $data = merge $data (dict "identifier" $git.AbbreviatedHash "version" $git.AbbreviatedHash) }}{{ end }}
+    <script type="application/ld+json">
+    {{ $data | jsonify }}
+    </script>
+{{ end }}
