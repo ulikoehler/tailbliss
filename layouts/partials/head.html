@@ -35,7 +35,8 @@
     Structured data (JSON-LD Article)
 
     Inclusion:
-    - Only injected for single content pages where the page `.Section` equals "posts".
+    - Injected only for single content pages whose section matches one of the configured "article sections".
+    - Default sections: posts, post, blog, articles (override with `params.articleSections` in config).
 
     Author selection priority:
     1. Post frontmatter `author` (i.e. `.Params.author`) — preferred and post-specific.
@@ -52,7 +53,11 @@
     Git data:
     - When `.GitInfo` is available we include the abbreviated commit hash as `identifier`/`version`.
 */}}
-{{ if and .IsPage (eq .Section "posts") }}
+{{/* Determine if current page should be treated as an Article */}}
+{{ $articleSections := slice "posts" "post" "blog" "articles" }}
+{{ with .Site.Params.articleSections }}{{ $articleSections = . }}{{ end }}
+{{ $isArticle := and .IsPage (in $articleSections .Section) }}
+{{ if $isArticle }}
         {{ $git := .GitInfo }}
         {{/* Prefer frontmatter `.Params.author`, then Git author, then site param `author` */}}
     {{ $authorName := "" }}
@@ -64,7 +69,11 @@
             - Use the git author date when `.GitInfo` provides it (most accurate for last edit)
             - Otherwise fall back to Hugo's `.Lastmod`
         */}}
-        {{ $dateModifiedSource := cond (and $git (ne $git.AuthorDate nil)) $git.AuthorDate .Lastmod }}
+        {{/* Safely determine dateModified source */}}
+        {{ $dateModifiedSource := .Lastmod }}
+        {{ with $git }}
+            {{ with .AuthorDate }}{{ $dateModifiedSource = . }}{{ end }}
+        {{ end }}
 
         {{/*
             datePublished: truncate time to midnight (00:00:00) but keep original timezone offset.
