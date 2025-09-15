@@ -1,8 +1,3 @@
-{{/* layouts/_default/_markup/render-codeblock.html
-Use Hugo's transform.HighlightCodeBlock to render fenced code blocks.
-This avoids accessing fields like .Info or .Language directly which may
-not be present on all Hugo versions' codeBlockContext. */}}
-
 {{- $result := transform.HighlightCodeBlock . -}}
 {{- $id := printf "cb-%s-%d" (.Page.File.BaseFileName | default "page") .Ordinal -}}
 
@@ -35,16 +30,20 @@ not be present on all Hugo versions' codeBlockContext. */}}
 
 {{- /* Allow attribute override: ```lang {filename="custom.name"}``` */ -}}
 {{- $filename := .Attributes.filename | default $guessed -}}
+{{- /* Display full path if provided; download only basename */ -}}
+{{- $display := $filename -}}
+{{- $download := $filename -}}
+{{- if and (ne $filename "") (in $filename "/") -}}
+    {{- $download = path.Base $filename -}}
+{{- end -}}
 
 <div class="codeblock group rounded-lg overflow-hidden shadow-sm border" id="{{ $id }}" data-lang="{{ $lang }}"
-    data-filename="{{ $filename }}">
-    <div
-        class="codeblock-top flex items-center justify-between gap-1 px-3 py-1 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+    data-filename="{{ $display }}" data-download-filename="{{ $download }}">
+    <div class="codeblock-top flex items-center justify-between gap-1 px-3 py-1 bg-slate-300 dark:bg-slate-800 border-b border-slate-500 dark:border-slate-700">
         <div class="codeblock-left flex items-center gap-2">
-            <span class="codeblock-filename ml-3 text-slate-700 dark:text-slate-100 text-xs font-semibold tracking-wide">{{
-                $filename }}</span>
+            <span class="codeblock-filename ml-3 text-slate-700 dark:text-slate-100 text-xs font-semibold tracking-wide" role="heading" aria-level="3">{{ $display }}</span>
         </div>
-        <div class="codeblock-actions flex items-center gap-1 pr-3">
+            <div class="codeblock-actions flex items-center gap-6">
             <button
                 class="codeblock-btn inline-flex items-center gap-2 px-2 py-1 text-sm rounded-md bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm hover:shadow-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
                 data-action="copy" data-for="{{ $id }}" aria-label="Copy code" title="Copy code">
@@ -57,9 +56,9 @@ not be present on all Hugo versions' codeBlockContext. */}}
                 <span class="ml-1">Copy</span>
             </button>
             <button
-                class="codeblock-btn inline-flex items-center gap-2 px-2 py-1 text-sm rounded-md bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm hover:shadow-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
-                data-action="download" data-for="{{ $id }}" data-filename="{{ $filename }}"
-                aria-label="Download code ({{ $filename }})" title="Download code ({{ $filename }})">
+                class="codeblock-btn inline-flex items-center gap-2 px-2 py-1 text-sm rounded-md bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm hover:shadow-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400  mr-3"
+                data-action="download" data-for="{{ $id }}" data-filename="{{ $download }}"
+                aria-label="Download code ({{ $display }})" title="Download code ({{ $display }})">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-current" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     aria-hidden="true">
